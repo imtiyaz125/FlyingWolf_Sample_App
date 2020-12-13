@@ -20,17 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
   LoginRequest _loginRequest = LoginRequest();
 
   Widget _widget = SizedBox();
- bool _isValidationFailed=false;
- @override
-  void initState() {
-   numberController.addListener((){
-     _isValidationFailed=false;
-   });
-   passwordController.addListener((){
-     _isValidationFailed=false;
-   });
-   super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,10 +43,10 @@ class _LoginScreenState extends State<LoginScreen> {
           } else if (state is LoginSuccess) {
             SharedPrefHelper.getBoolean(SharedPrefHelper.KEY_IS_LOGGEDIN).then((
                 value) => {
-            if(value)
-            Navigator.pushReplacement(
-            context,
-            CupertinoPageRoute(builder: (BuildContext context) => HomeScreen())),
+              if(value)
+                Navigator.pushReplacement(
+                    context,
+                    CupertinoPageRoute(builder: (BuildContext context) => HomeScreen())),
             });
             if (state.response.isValidCredentials) {
               Navigator.pushReplacement(
@@ -74,10 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
               resizeToAvoidBottomInset: false,
               body: Builder(builder: (_context) {
                 if (state is LoginError) {
-                  _isValidationFailed=true;
                   print(state.errorMessage);
                 } else if (state is LoginSuccess) {
-                  _isValidationFailed=false;
                   _widget = buildLoginWidgets(
                       context, true);
                 }
@@ -147,19 +134,15 @@ class _LoginScreenState extends State<LoginScreen> {
   buildLoginBtn(BuildContext context, bool isLoginBtnDisabled) {
     return InkWell(
       onTap: () {
-        if (!_isValidationFailed) {
-          if (passwordController.text.isEmpty ||
-              numberController.text.isEmpty) {
-            Utility.showAlertDialog(context, "Message", StringConstants.ALL_FIELDS_REQUIRED_ERR);
-          } else {
-            _loginRequest.password = passwordController.text;
-            _loginRequest.number = numberController.text;
-            _bloc.dispatch(LoginEvent(
-                request: _loginRequest
-            ));
-          }
-        }else{
-          Utility.showAlertDialog(context, "Message", StringConstants.PLEASE_VERIFY_DETAILS_FIRST);
+        if (passwordController.text.isEmpty ||
+            numberController.text.isEmpty) {
+          Utility.showAlertDialog(context, "Message", StringConstants.ALL_FIELDS_REQUIRED_ERR);
+        } else {
+          _loginRequest.password = passwordController.text;
+          _loginRequest.number = numberController.text;
+          _bloc.dispatch(LoginEvent(
+              request: _loginRequest
+          ));
         }
       },
       child: Container(
@@ -175,8 +158,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
                 colors: [
-                    Colors.blueAccent,
-                    Colors.lightBlueAccent
+                  Colors.blueAccent,
+                  Colors.lightBlueAccent
                 ])),
         child: Text(
           StringConstants.LOGIN_BTN_TEXT,
@@ -184,5 +167,12 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+  @override
+  void dispose() {
+    numberController.dispose();
+    passwordController.dispose();
+    _bloc=null;
+    super.dispose();
   }
 }
